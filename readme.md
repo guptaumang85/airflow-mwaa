@@ -1,0 +1,2 @@
+## Introduction
+ Here I am building a production ready system that is capable of handling billions of records—step by step. From setting up free Kafka and Elasticsearch clusters to real-time log indexing and CI/CD automated deployments.

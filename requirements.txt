@@ -1,0 +1,5 @@
+boto3
+faker
+confluent-kafka
+elasticsearch
+apache-airflow
