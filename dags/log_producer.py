@@ -9,6 +9,18 @@ from datetime import datetime, timedelta
 fake = Faker()
 logger = logging.getLogger(__name__)
 
+def get_secret(secret_name, region_name='ap-south-1'):
+    """ Retrieve secrets from AWS secret Manager """
+    session = boto3.session.Session()
+    client = session.client(service_name='secretsmanager', region_name=region_name)
+    try:
+        response = client.get_secret_value(SecretId=secret_name)
+        return json.loads(response['SecretString'])
+    except Exception as e:
+        logger.error(f"Secret retrieval: {e}")
+        raise
+
+
 def create_kafka_producer(config):
     return Producer(config)
 
@@ -47,17 +59,6 @@ def delivery_report(err, msg):
     else:
         logger.info(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
-def get_secret(secret_name, region_name='ap-south-1'):
-    """ Retrieve secrets from AWS secret Manager """
-    session = boto3.session.Session()
-    client = session.client(service_name='secretsmanager', region_name=region_name)
-    try:
-        response = client.get_secret_value(SecretId=secret_name)
-        return json.loads(response['SecretString'])
-    except Exception as e:
-        logger.error(f"Secret retrieval: {e}")
-        raise
-
 def produce_logs(**context):
     """ Produce log entries into Kafka """
     secrets = get_secret('MWAA_Secrets')
@@ -93,18 +94,17 @@ default_args = {
 }
 
 # dag = DAG(
-#     'dag_id': 'log_generation_pipeline',
-#     'default_args'=default_args,
-#     description='Generate and produce synthetic logs',
+#     dag_id='log_generation_pipeline',
+#     default_args=default_args,
+#     description='Generate and consume synthetic logs',
 #     schedule_interval='*/5 * * * *',
-#     start_date=datetime(year:2025, month:1, day:26),
-#     catup=False,
+#     start_date=datetime(2025, 1, 26),
+#     catchup=False,
 #     tags=['logs', 'kafka', 'production']
-
 # )
 
 # produce_logs_task = PythonOperator(
-#     task_id='generate_and_produce_logs',
+#     task_id='generate_and_consume_logs',
 #     python_callable=produce_logs,
 #     dag=dag
 # )
